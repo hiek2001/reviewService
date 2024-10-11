@@ -1,0 +1,43 @@
+services:
+  database:
+    container_name: mysql-container
+    image: mysql/mysql-server:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: reviewservice
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: 1234
+      TZ: 'Asia/Seoul'
+    ports:
+      - "13306:3306"
+    command:
+      - "mysqld"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+#    volumes:
+#      - ./db/mysql/data:/var/lib/mysql
+#      - ./db/mysql/config:/etc/mysql/conf.d
+#      - ./db/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+     - spartacourse_test_network
+
+  application:
+    container_name: main-server
+    restart: always
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    ports:
+      - "18080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-container:3306/reviewservice
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "1234"
+    depends_on:
+      - database
+    networks:
+      - spartacourse_test_network
+
+networks:
+  spartacourse_test_network:
+    driver: bridge
